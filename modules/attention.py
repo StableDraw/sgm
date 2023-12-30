@@ -540,11 +540,11 @@ class BasicTransformerBlock(nn.Module):
                 {"n_times_crossframe_attn_in_self": n_times_crossframe_attn_in_self}
             )
 
-        # return mixed_checkpoint(self._forward, kwargs, self.parameters(), self.checkpoint)
+        # return mixed_checkpoint(self._forward, kwargs, self.parameters(), self.checkpoint, use_reentrant = True)
         if self.checkpoint:
             # inputs = {"x": x, "context": context}
-            return checkpoint(self._forward, x, context)
-            # return checkpoint(self._forward, inputs, self.parameters(), self.checkpoint)
+            return checkpoint(self._forward, x, context, use_reentrant = True)
+            # return checkpoint(self._forward, inputs, self.parameters(), self.checkpoint, use_reentrant = True)
         else:
             return self._forward(**kwargs)
 
@@ -607,8 +607,8 @@ class BasicTransformerSingleLayerBlock(nn.Module):
 
     def forward(self, x, context=None):
         # inputs = {"x": x, "context": context}
-        # return checkpoint(self._forward, inputs, self.parameters(), self.checkpoint)
-        return checkpoint(self._forward, x, context)
+        # return checkpoint(self._forward, inputs, self.parameters(), self.checkpoint, use_reentrant = True)
+        return checkpoint(self._forward, x, context, use_reentrant = True)
 
     def _forward(self, x, context=None):
         x = self.attn1(self.norm1(x), context=context) + x

@@ -321,7 +321,7 @@ class ResBlock(TimestepBlock):
         :return: an [N x C x ...] Tensor of outputs.
         """
         if self.use_checkpoint:
-            return checkpoint(self._forward, x, emb)
+            return checkpoint(self._forward, x, emb, use_reentrant = True)
         else:
             return self._forward(x, emb)
 
@@ -391,7 +391,7 @@ class AttentionBlock(nn.Module):
         self.proj_out = zero_module(conv_nd(1, channels, channels, 1))
 
     def forward(self, x: th.Tensor, **kwargs) -> th.Tensor:
-        return checkpoint(self._forward, x)
+        return checkpoint(self._forward, x, use_reentrant = True)
 
     def _forward(self, x: th.Tensor) -> th.Tensor:
         b, c, *spatial = x.shape

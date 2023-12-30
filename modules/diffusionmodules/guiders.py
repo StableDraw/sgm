@@ -1,11 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple, Union
+from functools import partial
 
 import torch
 from einops import rearrange, repeat
 
-from ...util import append_dims, default
+from ...util import append_dims, default, instantiate_from_config
 
 logpy = logging.getLogger(__name__)
 
@@ -22,11 +23,22 @@ class Guider(ABC):
 
 
 class VanillaCFG(Guider):
-    def __init__(self, scale: float):
+    def __init__(self, scale, dyn_thresh_config=None):
+        scale_schedule = lambda scale, sigma: scale  # independent of step
+        self.scale_schedule = partial(scale_schedule, scale)
         self.scale = scale
+        self.dyn_thresh = instantiate_from_config(
+            default(
+                dyn_thresh_config,
+                {
+                    "target": "sgm.modules.diffusionmodules.sampling_utils.NoDynamicThresholding"
+                },
+            )
+        )
 
     def __call__(self, x: torch.Tensor, sigma: torch.Tensor) -> torch.Tensor:
         x_u, x_c = x.chunk(2)
+        scale_value = self.scale_schedule(sigma)
         x_pred = x_u + self.scale * (x_c - x_u)
         return x_pred
 

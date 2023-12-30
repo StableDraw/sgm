@@ -485,7 +485,7 @@ class FrozenOpenCLIPEmbedder2(AbstractEmbModel):
                 self.model.transformer.grad_checkpointing
                 and not torch.jit.is_scripting()
             ):
-                x = checkpoint(r, x, attn_mask)
+                x = checkpoint(r, x, attn_mask, use_reentrant = True)
             else:
                 x = r(x, attn_mask=attn_mask)
         outputs["last"] = x.permute(1, 0, 2)  # LND -> NLD
@@ -558,7 +558,7 @@ class FrozenOpenCLIPEmbedder(AbstractEmbModel):
                 self.model.transformer.grad_checkpointing
                 and not torch.jit.is_scripting()
             ):
-                x = checkpoint(r, x, attn_mask)
+                x = checkpoint(r, x, attn_mask, use_reentrant = True)
             else:
                 x = r(x, attn_mask=attn_mask)
         return x
